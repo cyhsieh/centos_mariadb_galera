@@ -1,0 +1,53 @@
+version: "3.7"
+services:
+  hosta:
+    networks:
+      net:
+        ipv4_address: 172.0.0.11
+    # image: official/centos/mariadb
+    build: ./dockerfile_path
+    # image: centos:latest
+    container_name: containerA
+    environment:
+      expose:
+       - "3306"
+    environment: 
+     - hello=world
+     - MYSQL_ROOT_PASSWORD=root
+     - clusterip=172.0.0.11
+     - nodeip=172.0.0.11
+    # command: service mysql start --wsrep-new-cluster
+    extra_hosts:
+       - "hostB:172.0.0.12"
+    volumes:
+       - /Users/atheq33/Documents/pg/201905_centos_galera/centosMariadb_A:/var/lib/mysql
+    hostname: hostA
+    stdin_open: true
+    tty: true
+  hostb:
+    networks:
+      net:
+        ipv4_address: 172.0.0.12
+    # image: official/centos/mariadb
+    build: ./dockerfile_path
+    # image: centos:latest
+    container_name: containerB
+    environment:
+     - MYSQL_ROOT_PASSWORD=root
+     - clusterip=172.0.0.11
+     - nodeip=172.0.0.12
+    volumes:
+       - /Users/atheq33/Documents/pg/201905_centos_galera/centosMariadb_B:/var/lib/mysql
+    depends_on:
+       - hosta
+    # command: service start mysql
+    extra_hosts:
+       - "hostA:172.0.0.11"
+    hostname: hostB
+    stdin_open: true
+    tty: true
+networks:
+  net:
+      ipam:
+        config:
+           - subnet: 172.0.0.0/24
