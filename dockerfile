@@ -1,0 +1,52 @@
+FROM centos:centos7
+
+MAINTAINER The CentOS Project <cloud-ops@centos.org>
+LABEL Vendor="CentOS"
+LABEL License=GPLv2
+LABEL Version=5.5.41
+
+LABEL Build docker build --rm --tag centos/mariadb55 .
+
+COPY MariaDB.repo /etc/yum.repos.d/
+
+RUN yum -y install --setopt=tsflags=nodocs epel-release && \ 
+    rpm -ivh http://mirror.centos.org/centos/6/os/x86_64/Packages/boost-program-options-1.41.0-28.el6.x86_64.rpm && \
+    yum -y install --setopt=tsflags=nodocs MariaDB-server MariaDB-client bind-utils pwgen psmisc hostname && \ 
+    yum -y install --setopt=tsflags=nodocs vim iputils net-tools telnet initscripts && \ 
+    yum -y erase vim-minimal
+
+RUN echo "set -o vi" >> /etc/bashrc && \
+    echo "alias cnf='vim /etc/my.cnf.d/server.cnf'" >> /etc/bashrc && \
+    echo "alias err='vim /var/lib/mysql/$HOSTNAME.err'" >> /etc/bashrc
+    # yum -y update && yum clean all
+
+COPY galerasetting.sh /
+RUN chmod +x /galerasetting.sh
+# RUN chmod +x /galerasetting.sh && \
+#     sh /galerasetting.sh
+
+# Fix permissions to allow for running on openshift
+# COPY fix-permissions.sh ./
+# RUN chmod +x ./fix-permissions.sh && \
+#     ./fix-permissions.sh /var/lib/mysql/   && \
+#     ./fix-permissions.sh /var/log/mariadb/ && \
+#     ./fix-permissions.sh /var/run/
+
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+
+# ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/galerasetting.sh"]
+
+# Place VOLUME statement below all changes to /var/lib/mysql
+VOLUME /var/lib/mysql
+
+# By default will run as random user on openshift and the mysql user (27)
+# everywhere else
+# USER 27
+
+EXPOSE 3306 4444 4567 4567/udp 4568
+# CMD ["mysqld_safe"]
+# CMD "sh /galerasetting.sh"
+
+COPY *.sql /
