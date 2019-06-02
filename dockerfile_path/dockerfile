@@ -48,5 +48,3 @@ VOLUME /var/lib/mysql
 EXPOSE 3306 4444 4567 4567/udp 4568
 # CMD ["mysqld_safe"]
 # CMD "sh /galerasetting.sh"
-
-COPY *.sql /

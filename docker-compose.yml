@@ -20,7 +20,7 @@ services:
     extra_hosts:
        - "hostB:172.0.0.12"
     volumes:
-       - /Users/atheq33/Documents/pg/201905_centos_galera/centosMariadb_A:/var/lib/mysql
+       - ./centosMariadb_A:/var/lib/mysql
     hostname: hostA
     stdin_open: true
     tty: true
@@ -37,7 +37,7 @@ services:
      - clusterip=172.0.0.11
      - nodeip=172.0.0.12
     volumes:
-       - /Users/atheq33/Documents/pg/201905_centos_galera/centosMariadb_B:/var/lib/mysql
+       - ./centosMariadb_B:/var/lib/mysql
     depends_on:
        - hosta
     # command: service start mysql
